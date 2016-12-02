@@ -1,0 +1,22 @@
+Mandatory
+=========
+* Logging
+  - be able to write to file or console
+  - TimeStamp logging
+  - When something is done
+  - Time it takes to open/close
+* WhatsApp Integration
+  - Status after Door Open/Close Event
+  - Status from request
+  - Help
+  - Open/Close
+  - Set times
+  - Diag
+    o door status not as expected
+    o door MotorTimeOut expired
+
+Investigate
+===========
+Interrupt based timing
+move door open times to file
+determine on app startup what to do with door position based upon current time and open/close schedule
