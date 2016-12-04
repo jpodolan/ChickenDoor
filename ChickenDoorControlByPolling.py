@@ -2,6 +2,9 @@ import time
 import RPi.GPIO as GPIO
 import ChickDoorHW_IO as ChickDoor
 import DoorLock
+import PowerDetection12V
+import ChickenPiLogging
+
 
 
 DoorSensorValues = ['DoorOpened','Door Closed', 'Door Partially Opened','Door Status Undetermined' ]
@@ -17,10 +20,10 @@ MotorTimeoutTime = 32
 def InitializeSensors(*args):
     GPIO.setup(DoorClosedSensorPort, GPIO.IN,pull_up_down=GPIO.PUD_UP)
     GPIO.setup(DoorOpenedSensorPort, GPIO.IN,pull_up_down=GPIO.PUD_UP)
-    print('Door Sensors Initialized')
+    ChickenPiLogging.LogInfo('Door Sensors Initialized')
     
 def DoorOpened(self):
-    print('DoorOpened Procedure Called')
+    ChickenPiLogging.LogInfo('DoorOpened Procedure Called')
     ChickDoor.TurnMotorOff()
     VerifyDoorStatus(DoorSensorValues[0])
     
@@ -29,9 +32,9 @@ def OpenDoor(*args):
     #If door already opened, don't open
     DoorState=GetDoorStatus()
     if DoorState == DoorSensorValues[0]:
-        print('Door already opened, ignoring OpenDoor command')
+        ChickenPiLogging.LogError('Door already opened. Ignoring OpenDoor command')
     else:
-        print('Opening Door')
+        ChickenPiLogging.LogInfo('Opening Door')
         ChickDoor.TurnMotorOff()
 
         MotorStartTime = time.time()
@@ -41,10 +44,10 @@ def OpenDoor(*args):
 
         if DoorMovementSuccess:
             DoorOpened(1)
-            print('Time to open door: {0:.2f} seconds'.format(time.time() - MotorStartTime))
+            ChickenPiLogging.LogInfo('Time to open door: {0:.2f} seconds'.format(time.time() - MotorStartTime))
         
 def DoorClosed(self):
-    print('DoorClosed Procedure Called')
+    ChickenPiLogging.LogInfo('DoorClosed Procedure Called')
     ChickDoor.TurnMotorOff()
     VerifyDoorStatus(DoorSensorValues[1])
        
@@ -54,9 +57,9 @@ def CloseDoor(*args):
     #If door already opened, don't open
     DoorState=GetDoorStatus()
     if DoorState == DoorSensorValues[1]:
-        print('Door already closed, ignoring CloseDoor command')
+        ChickenPiLogging.LogError('Door already closed. Ignoring CloseDoor command')
     else:
-        print('Closing Door')
+        ChickenPiLogging.LogInfo('Closing Door')
         ChickDoor.TurnMotorOff()
 
         MotorStartTime = time.time()
@@ -66,7 +69,7 @@ def CloseDoor(*args):
 
         if DoorMovementSuccess:
             DoorClosed(1)
-            print('Time to close door: {0:.2f} seconds'.format(time.time() - MotorStartTime))
+            ChickenPiLogging.LogInfo('Time to close door: {0:.2f} seconds'.format(time.time() - MotorStartTime))
 
 
 def DetermineWhenToStopMotor(SensorPort,MotorStartTime):
@@ -74,28 +77,28 @@ def DetermineWhenToStopMotor(SensorPort,MotorStartTime):
     while CurrDoorStatus:
         time.sleep(.2)
         if CheckForMotorTimeOut(MotorStartTime) == True:
-            print('Motor Running Longer than it should, forcing motor off')
+            ChickenPiLogging.LogCritical('Motor Running Longer than it should! Forcing motor off')
             ChickDoor.TurnMotorOff()
             return(False)
             break
         CurrDoorStatus = GPIO.input(SensorPort)
         if CurrDoorStatus == False:
-            print('Debouncing Sensor')
+            ChickenPiLogging.LogInfo('Debouncing Sensor')
             time.sleep(.2)
             # Start Debounce
             CurrDoorStatus = GPIO.input(SensorPort)
             if CurrDoorStatus == False:
                 # Sensor Debounced
-                print('Sensor Debounced')
+                ChickenPiLogging.LogInfo('Sensor Debounced')
                 return(True)
                 break
 
 def VerifyDoorStatus(ExpectedDoorStatus):
     ActualDoorStatus = GetDoorStatus()
     if ExpectedDoorStatus == ActualDoorStatus:
-        print('Door Status as Expected, Current Door Status = {}'.format(ActualDoorStatus))
+        ChickenPiLogging.LogInfo('Door Status as Expected. Current Door Status = {}'.format(ActualDoorStatus))
     else:
-        print('!!!!!! Unexpected Door Status, Current Door Status = {}, Expected Door Status = {} !!!!!'.format(ActualDoorStatus,ExpectedDoorStatus))
+        ChickenPiLogging.LogCritical('!!!!!! Unexpected Door Status. Current Door Status = {}. Expected Door Status = {} !!!!!'.format(ActualDoorStatus,ExpectedDoorStatus))
     
 
 def GetDoorStatus(*args):
@@ -120,30 +123,33 @@ def GetDoorStatus(*args):
         return(DoorSensorValues[3])
 
 def CheckForMotorTimeOut(MotorStartTime):
-
-
     CurrentTime = time.time()
     if CurrentTime - MotorStartTime >= MotorTimeoutTime:
         #motor timeout 
         return(True)
     else:
         return(False)
-'''
 
-# Below this only for debug
+'''
+GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
+ChickenPiLogging.SetupLogging()
+PowerDetection12V.Initialize12V_PowerDetection()
 DoorLock.InitializeDoorLockIO()
 ChickDoor.InitializeMotorIO()
-InitializeSensors();
-'''
+InitializeSensors()
 
-'''
+
+
+# Below this only for debug
+
+
 
 
 # for loop testing:
 for i in range(5):
     OpenDoor()
     CloseDoor()
-    print('i = {}'.format(i))
+    ChickenPiLogging.LogInfo('i = {}'.format(i))
 
 '''

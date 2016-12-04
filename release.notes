@@ -1,17 +1,37 @@
-﻿Date:11/27/16
+﻿Date:12/04/16
 Functionality
 =============
 Existing from  previous release:
-* Base functions of Door Opening and Closing
-* Door Schedule working with Sleep function (would like to be interrupt based)
-* Verifies door position after movement then logs status to console
-
-New functionality:
 * Door does not open if already opened
 * Door does not close if already closed
 * Motor shuts off if running too long (to protect Door going too high and damaging pulley)
 * changed sensor reading from edge detection to polling.  When opening door, many false edge detections, unclear why, susspect GPIO.add_event_detect.  Don't have oscilliscope to root cause problem so changed approcach
 
+New functionality
+=================
+* Added file logger
+* Added timer to track how long it takes to open/close door
+* Added a windows 10 share to /mnt to logg data
 
-Known Defects:
+
+Known Defects
+==============
 * None
+
+Planned for next release
+========================
+* WhatsApp Integration
+  - Status after Door Open/Close Event
+  - Status from request
+  - Help
+  - Open/Close
+  - Set times
+  - Diag
+    o door status not as expected
+    o door MotorTimeOut expired
+
+To Investigate
+===========
+Interrupt based timing
+move door open times to file
+determine on app startup what to do with door position based upon current time and open/close schedule

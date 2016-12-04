@@ -1,5 +1,6 @@
 import RPi.GPIO as GPIO
 import time
+import ChickenPiLogging
 
 #setup of IO
 DoorLockControlPort = 36
@@ -14,17 +15,17 @@ def InitializeDoorLockIO(*args):
     GPIO.setup(DoorLockControlPort, GPIO.OUT)
     GPIO.setup(DoorLockAlwaysLowControlPort, GPIO.OUT)
     GPIO.output(DoorLockAlwaysLowControlPort, GPIO.LOW)
-    print('Initialized Door Lock IO')
+    ChickenPiLogging.LogInfo('Initialized Door Lock IO')
     LockDoor()
 
 def UnlockDoor(*args):
-    print('Door Unlocked')
+    ChickenPiLogging.LogInfo('Door Unlocked')
     time.sleep(LockDelay)    
     GPIO.output(DoorLockControlPort, GPIO.HIGH)
     time.sleep(LockDelay)    
 
 def LockDoor(*args):
-    print('Door Locked')
+    ChickenPiLogging.LogInfo('Door Locked')
     time.sleep(LockDelay)    
     GPIO.output(DoorLockControlPort, GPIO.LOW)
     time.sleep(LockDelay)    
