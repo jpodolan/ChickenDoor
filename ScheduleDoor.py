@@ -1,10 +1,13 @@
 import pdb
 import time
 import RPi.GPIO as GPIO
-#import ChickenDoorControl
 import ChickenDoorControlByPolling as ChickenDoorControl
 import ChickDoorHW_IO as ChickDoorMotor
 import DoorLock
+import PowerDetection12V
+import ChickenPiLogging
+
+
 
 # door open and close times, must be in 24 hour format    
 OpenDoorHour = 6
@@ -21,32 +24,44 @@ DoorOpenedAlreadyToday=False
 DoorClosedAlreadyToday=False
 
 #setup HW
-GPIO.setmode(GPIO.BOARD)
-DoorLock.InitializeDoorLockIO()
-ChickDoorMotor.InitializeMotorIO()
-ChickenDoorControl.InitializeSensors();
+def InitializeAll():
+    GPIO.setwarnings(False)
+    GPIO.setmode(GPIO.BOARD)
+    ChickenPiLogging.SetupLogging()
+    PowerDetection12V.Initialize12V_PowerDetection()
+    DoorLock.InitializeDoorLockIO()
+    ChickDoorMotor.InitializeMotorIO()
+    ChickenDoorControl.InitializeSensors()
 
+
+
+
+
+InitializeAll()
 
 while True:
     CurrentTime = time.localtime()
+
+    PowerDetection12V.Is12V_PowerActive()
     
-    print('Current Time: {}:{}:{}'.format(CurrentTime.tm_hour, CurrentTime.tm_min,CurrentTime.tm_sec))
+#    print('Current Time: {}:{}:{}'.format(CurrentTime.tm_hour, CurrentTime.tm_min,CurrentTime.tm_sec))
+    ChickenPiLogging.LogInfo('Current Time: {}:{}:{}'.format(CurrentTime.tm_hour, CurrentTime.tm_min,CurrentTime.tm_sec))
 
     #Reset Flags if New Day
     if CurrentTime.tm_hour == 0 and CurrentTime.tm_min == 0:
-        print('Reseting DoorOpenedAlready and DoorClosedAlready Flags')
+        ChickenPiLogging.LogInfo('Reseting DoorOpenedAlready and DoorClosedAlready Flags')
         DoorOpenedAlreadyToday=False
         DoorClosedAlreadyToday=False
 
     #Check if time to open door
     if (CurrentTime.tm_hour == OpenDoorHour and CurrentTime.tm_min== OpenDoorMinute) and DoorOpenedAlreadyToday == False:
-        print('Time to open door')
+        ChickenPiLogging.LogInfo('Time to open door')
         ChickenDoorControl.OpenDoor()
         DoorOpenedAlreadyToday = True;
 
     #Check if time to close door
     if (CurrentTime.tm_hour == CloseDoorHour and CurrentTime.tm_min == CloseDoorMinute) and DoorClosedAlreadyToday == False:
-        print('Time to close door')
+        ChickenPiLogging.LogInfo('Time to close door')
         ChickenDoorControl.CloseDoor()
         DoorClosedAlreadyToday = True
         
