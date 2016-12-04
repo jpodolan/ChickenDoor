@@ -1,0 +1,17 @@
+﻿Date:11/27/16
+Functionality
+=============
+Existing from  previous release:
+* Base functions of Door Opening and Closing
+* Door Schedule working with Sleep function (would like to be interrupt based)
+* Verifies door position after movement then logs status to console
+
+New functionality:
+* Door does not open if already opened
+* Door does not close if already closed
+* Motor shuts off if running too long (to protect Door going too high and damaging pulley)
+* changed sensor reading from edge detection to polling.  When opening door, many false edge detections, unclear why, susspect GPIO.add_event_detect.  Don't have oscilliscope to root cause problem so changed approcach
+
+
+Known Defects:
+* None
